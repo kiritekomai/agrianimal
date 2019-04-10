@@ -1,0 +1,5 @@
+{
+	"item.agrianimal.spawn_egg_agri_wolf": "農業わんこのタマゴ",
+	"entity.agrianimal.agri_wolf": "農業わんこ",
+	"agrianimal.update.newversion": "%s の新しいバージョンが利用可能です"
+}
