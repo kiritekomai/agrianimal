@@ -1,0 +1,41 @@
+{
+	"type": "crafting_shaped",
+	"pattern": [
+		"#BM",
+		"EDR",
+		"WPC"
+	],
+	"key": {
+		"#": {
+			"item": "minecraft:beef"
+		},
+		"B": {
+			"item": "minecraft:bone"
+		},
+		"M": {
+			"item": "minecraft:mutton"
+		},
+		"E": {
+			"item": "minecraft:emerald_block"
+		},
+		"D": {
+			"item": "minecraft:diamond_block"
+		},
+		"R": {
+			"item": "minecraft:redstone_block"
+		},
+		"W": {
+			"item": "minecraft:wheat"
+		},
+		"P": {
+			"item": "minecraft:potato"
+		},
+		"C": {
+			"item": "minecraft:carrot"
+		}
+	},
+	"result": {
+		"item": "agrianimal:item/spawn_egg_agri_wolf",
+		"count": 1
+	}
+}

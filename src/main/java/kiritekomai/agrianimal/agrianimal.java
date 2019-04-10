@@ -1,5 +1,7 @@
 package kiritekomai.agrianimal;
 
+import kiritekomai.agrianimal.client.AgriAnimalRender;
+import kiritekomai.agrianimal.init.AgriAnimalEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -13,7 +15,12 @@ public class agrianimal {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
 		MinecraftForge.EVENT_BUS.register(this);
 	}
+
 	@SubscribeEvent
 	public void init(FMLClientSetupEvent event) {
+		//associate entity and render class
+		AgriAnimalRender.entityRender();
+		//add spawn biomes
+		AgriAnimalEntity.spawnEntity();
 	}
 }
