@@ -35,7 +35,7 @@
 		}
 	},
 	"result": {
-		"item": "agrianimal:item/spawn_egg_agri_wolf",
+		"item": "agrianimal:spawn_egg_agri_wolf",
 		"count": 1
 	}
 }
