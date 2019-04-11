@@ -31,8 +31,6 @@ public class ModelAgriWolf extends ModelBase {
 	private final ModelRenderer farmerMane;
 
 	public ModelAgriWolf() {
-		float f = 0.0F;
-		float f1 = 13.5F;
 		this.farmerHeadMain = new ModelRenderer(this, 0, 0);
 		this.farmerHeadMain.addBox(-2.0F, -3.0F, -2.0F, 6, 6, 4, 0.0F);
 		this.farmerHeadMain.setRotationPoint(-1.0F, 13.5F, -7.0F);
@@ -70,7 +68,6 @@ public class ModelAgriWolf extends ModelBase {
 		super.render(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
 		this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
 		if (this.isChild) {
-			float f = 2.0F;
 			GlStateManager.pushMatrix();
 			GlStateManager.translatef(0.0F, 5.0F * scale, 2.0F * scale);
 			this.farmerHeadMain.renderWithRotation(scale);

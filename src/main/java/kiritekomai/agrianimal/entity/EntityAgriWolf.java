@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import kiritekomai.agrianimal.entity.ai.EntityAIMyFollowOwner;
 import kiritekomai.agrianimal.entity.ai.EntityAIMyHarvestFarmland;
 import kiritekomai.agrianimal.entity.ai.EntityAIPutItemInChest;
 import kiritekomai.agrianimal.init.AgriAnimalEntity;
@@ -13,7 +14,6 @@ import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAvoidEntity;
-import net.minecraft.entity.ai.EntityAIFollowOwner;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAILeapAtTarget;
 import net.minecraft.entity.ai.EntityAILookIdle;
@@ -54,7 +54,7 @@ import net.minecraft.world.storage.loot.LootTableList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public class EntityAgriWolf extends EntityAgriAnimal{
+public class EntityAgriWolf extends EntityAgriAnimal {
 
 	private static final DataParameter<Float> DATA_HEALTH_ID = EntityDataManager.createKey(EntityAgriAnimal.class,
 			DataSerializers.FLOAT);
@@ -73,7 +73,6 @@ public class EntityAgriWolf extends EntityAgriAnimal{
 	private float timeWolfIsShaking;
 	private float prevTimeWolfIsShaking;
 
-
 	public EntityAgriWolf(World worldIn) {
 		super(AgriAnimalEntity.AGRI_WOLF, worldIn);
 		this.setSize(0.6F, 0.85F);
@@ -88,7 +87,7 @@ public class EntityAgriWolf extends EntityAgriAnimal{
 		this.tasks.addTask(3, new EntityAIMyHarvestFarmland(this, 1.0D));
 		this.tasks.addTask(4, this.aiSit);
 		this.tasks.addTask(5, new EntityAILeapAtTarget(this, 0.4F));
-		this.tasks.addTask(6, new EntityAIFollowOwner(this, 1.0D, 10.0F, 2.0F));
+		this.tasks.addTask(6, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 2.0F));
 		this.tasks.addTask(7, new EntityAIMate(this, 1.0D));
 		this.tasks.addTask(8, new EntityAIWanderAvoidWater(this, 1.0D));
 		this.tasks.addTask(10, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
@@ -389,27 +388,25 @@ public class EntityAgriWolf extends EntityAgriAnimal{
 					boolean nextState;
 					if (this.isHarvesting()) {
 						if (item == Items.WHEAT) {
-							nextState = false;
+							this.aiSit.setSitting(false);
+							this.setHarvesting(false);
 						} else {
-							nextState = true;
+							this.aiSit.setSitting(true);
+							this.setHarvesting(false);
 						}
 					} else {
 						if (item == Items.WHEAT) {
-							nextState = true;
+							this.aiSit.setSitting(false);
+							this.setHarvesting(true);
 						} else {
-							nextState = !this.isSitting();
+							this.aiSit.setSitting(!this.isSitting());
+							this.setHarvesting(false);
 						}
 
 					}
-					this.aiSit.setSitting(nextState);
 					this.isJumping = false;
 					this.navigator.clearPath();
 					this.setAttackTarget((EntityLivingBase) null);
-					if (nextState && item == Items.WHEAT) {
-						this.setHarvesting(true);
-					} else {
-						this.setHarvesting(false);
-					}
 				}
 			}
 		} else if (item == Items.BONE && !this.isAngry()) {
