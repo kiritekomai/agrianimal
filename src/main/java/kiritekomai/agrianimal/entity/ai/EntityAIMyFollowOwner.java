@@ -67,7 +67,8 @@ public class EntityAIMyFollowOwner extends EntityAIBase {
 	public boolean shouldContinueExecuting() {
 		return !this.petPathfinder.noPath()
 				&& this.tameable.getDistanceSq(this.owner) > (double) (this.maxDist * this.maxDist)
-				&& !this.tameable.isSitting();
+				&& !this.tameable.isSitting()
+				&& !this.tameable.isHarvesting();
 	}
 
 	/**
