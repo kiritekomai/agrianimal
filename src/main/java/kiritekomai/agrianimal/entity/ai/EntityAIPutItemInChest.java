@@ -103,23 +103,32 @@ public class EntityAIPutItemInChest extends EntityAIMoveToBlock {
 	@Nullable
 	public static IInventory getInventoryAtPosition(World worldIn, BlockPos pos) {
 		IInventory iinventory = null;
-		IBlockState iblockstate = worldIn.getBlockState(pos);
-		Block block = iblockstate.getBlock();
-		if (iblockstate.hasTileEntity()) {
-			TileEntity tileentity = worldIn.getTileEntity(pos);
-			if (tileentity instanceof IInventory) {
-				iinventory = (IInventory) tileentity;
-				if (iinventory instanceof TileEntityChest && block instanceof BlockChest) {
-					iinventory = ((BlockChest) block).getContainer(iblockstate, worldIn, pos, true);
+		BlockPos[] chkPosArray = { pos, pos.up().north(), pos.up().east(), pos.up().south(), pos.up().west() };
+
+		for (BlockPos chkPos : chkPosArray) {
+
+			IBlockState iblockstate = worldIn.getBlockState(chkPos);
+			Block block = iblockstate.getBlock();
+			if (iblockstate.hasTileEntity()) {
+				TileEntity tileentity = worldIn.getTileEntity(chkPos);
+				if (tileentity instanceof IInventory) {
+					iinventory = (IInventory) tileentity;
+					if (iinventory instanceof TileEntityChest && block instanceof BlockChest) {
+						iinventory = ((BlockChest) block).getContainer(iblockstate, worldIn, chkPos, true);
+					}
 				}
 			}
-		}
 
-		if (iinventory == null) {
-			List<Entity> list = ((World) worldIn).getEntitiesInAABBexcluding((Entity) null, new AxisAlignedBB(pos),
-					EntitySelectors.HAS_INVENTORY);
-			if (!list.isEmpty()) {
-				iinventory = (IInventory) list.get(worldIn.rand.nextInt(list.size()));
+			if (iinventory == null) {
+				List<Entity> list = ((World) worldIn).getEntitiesInAABBexcluding((Entity) null,
+						new AxisAlignedBB(chkPos),
+						EntitySelectors.HAS_INVENTORY);
+				if (!list.isEmpty()) {
+					iinventory = (IInventory) list.get(worldIn.rand.nextInt(list.size()));
+				}
+			}
+			if (iinventory != null) {
+				break;
 			}
 		}
 
