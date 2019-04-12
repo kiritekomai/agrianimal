@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
@@ -71,6 +72,36 @@ public abstract class EntityAgriAnimal extends EntityTameable {
 
 	public InventoryBasic getInventory() {
 		return this.myInventory;
+	}
+
+	public void dropInventoryItems() {
+
+		float f = 0.3F;
+		float f1 = this.rotationYawHead;
+		float f2 = this.rotationPitch;
+		double mx = (double) (-MathHelper.sin(f1 * ((float) Math.PI / 180F))
+				* MathHelper.cos(f2 * ((float) Math.PI / 180F)) * 0.3F);
+		double my = (double) (MathHelper.cos(f1 * ((float) Math.PI / 180F))
+				* MathHelper.cos(f2 * ((float) Math.PI / 180F)) * 0.3F);
+		double mz = (double) (-MathHelper.sin(f2 * ((float) Math.PI / 180F)) * 0.3F + 0.1F);
+
+		for (int i = 0; i < this.myInventory.getSizeInventory(); ++i) {
+			ItemStack itemstack = this.myInventory.getStackInSlot(i);
+			if (!itemstack.isEmpty()) {
+				EntityItem entityitem = new EntityItem(this.world, this.posX, this.posY + 0.5F, this.posZ,
+						itemstack.copy());
+				entityitem.motionX = mx;
+				entityitem.motionY = my;
+				entityitem.motionZ = mz;
+				entityitem.setDefaultPickupDelay();
+				if (this.world.spawnEntity(entityitem)) {
+					itemstack.setCount(0);
+				}
+			}
+			this.myInventory.setInventorySlotContents(i, itemstack);
+			this.myInventory.markDirty();
+		}
+
 	}
 
 	public boolean isFarmItemInInventory() {

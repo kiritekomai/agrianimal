@@ -15,7 +15,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAvoidEntity;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
-import net.minecraft.entity.ai.EntityAILeapAtTarget;
 import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAIMate;
 import net.minecraft.entity.ai.EntityAIOwnerHurtByTarget;
@@ -86,7 +85,6 @@ public class EntityAgriWolf extends EntityAgriAnimal {
 		this.tasks.addTask(2, new EntityAIPutItemInChest(this, 1.0D));
 		this.tasks.addTask(3, new EntityAIMyHarvestFarmland(this, 1.0D));
 		this.tasks.addTask(4, this.aiSit);
-		this.tasks.addTask(5, new EntityAILeapAtTarget(this, 0.4F));
 		this.tasks.addTask(6, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 2.0F));
 		this.tasks.addTask(7, new EntityAIMate(this, 1.0D));
 		this.tasks.addTask(8, new EntityAIWanderAvoidWater(this, 1.0D));
@@ -351,7 +349,13 @@ public class EntityAgriWolf extends EntityAgriAnimal {
 		Item item = itemstack.getItem();
 		if (this.isTamed()) {
 			if (!itemstack.isEmpty()) {
-				if (item instanceof ItemFood) {
+				if (item == Items.ROTTEN_FLESH) {
+					if (!player.abilities.isCreativeMode) {
+						itemstack.shrink(1);
+					}
+					this.dropInventoryItems();
+					return true;
+				} else if (item instanceof ItemFood) {
 					ItemFood itemfood = (ItemFood) item;
 					if (itemfood.isMeat() && this.dataManager.get(DATA_HEALTH_ID) < 20.0F) {
 						if (!player.abilities.isCreativeMode) {
