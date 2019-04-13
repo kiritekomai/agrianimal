@@ -13,6 +13,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
+import net.minecraft.pathfinding.PathFinder;
+import net.minecraft.pathfinding.WalkNodeProcessor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReaderBase;
@@ -24,8 +26,10 @@ public class EntityAIMyHarvestFarmland extends EntityAIMoveToBlock {
 	/** 0 => harvest, 1 => replant, -1 => none */
 	private int currentTask;
 
+	static final int findPathMaxLength = 16;
+
 	public EntityAIMyHarvestFarmland(EntityAgriAnimal farmerIn, double speedIn) {
-		super(farmerIn, speedIn, 16);
+		super(farmerIn, speedIn, findPathMaxLength);
 		this.agriAnimal = farmerIn;
 	}
 
@@ -128,31 +132,45 @@ public class EntityAIMyHarvestFarmland extends EntityAIMoveToBlock {
 	protected boolean shouldMoveTo(IWorldReaderBase worldIn, BlockPos pos) {
 		Block block = worldIn.getBlockState(pos).getBlock();
 		pos = pos.up();
+
+		int task = -1;
+		boolean shouldGo = false;
+
 		if (block == Blocks.FARMLAND) {
 			IBlockState iblockstate = worldIn.getBlockState(pos);
 			block = iblockstate.getBlock();
 			if (block instanceof BlockCrops && ((BlockCrops) block).isMaxAge(iblockstate)
 					&& (this.currentTask == 0 || this.currentTask < 0)) {
-				this.currentTask = 0;
-				return true;
+				task = 0;
+				shouldGo = true;
 			}
 
-			if (iblockstate.isAir() && this.hasFarmItem && (this.currentTask == 1 || this.currentTask < 0)) {
-				this.currentTask = 1;
-				return true;
+			if (!shouldGo && iblockstate.isAir() && this.hasFarmItem
+					&& (this.currentTask == 1 || this.currentTask < 0)) {
+				task = 1;
+				shouldGo = true;
 			}
 		}
-		if ((getStemGlownBlockPos(worldIn, pos) != null)
+		if (!shouldGo && (getStemGlownBlockPos(worldIn, pos) != null)
 				&& (this.currentTask == 0 || this.currentTask < 0)) {
-			this.currentTask = 0;
-			return true;
+			task = 0;
+			shouldGo = true;
 
 		}
-		if ((getBlockReedPos(worldIn, pos) != null)
+		if (!shouldGo && (getBlockReedPos(worldIn, pos) != null)
 				&& (this.currentTask == 0 || this.currentTask < 0)) {
-			this.currentTask = 0;
-			return true;
+			task = 0;
+			shouldGo = true;
 
+		}
+		PathFinder path_finder = new PathFinder(new WalkNodeProcessor());
+
+		if (shouldGo) {
+			if (path_finder.findPath(this.agriAnimal.world, this.agriAnimal, pos, findPathMaxLength) != null) {
+				//exits path to the destination block
+				this.currentTask = task;
+				return true;
+			}
 		}
 
 		return false;

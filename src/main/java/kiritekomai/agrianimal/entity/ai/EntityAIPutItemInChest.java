@@ -13,6 +13,8 @@ import net.minecraft.entity.ai.EntityAIMoveToBlock;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.pathfinding.PathFinder;
+import net.minecraft.pathfinding.WalkNodeProcessor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EntitySelectors;
@@ -28,8 +30,10 @@ public class EntityAIPutItemInChest extends EntityAIMoveToBlock {
 	/** 0 => harvest, 1 => replant, -1 => none */
 	private int currentTask;
 
+	static final int findPathMaxLength = 16;
+
 	public EntityAIPutItemInChest(EntityAgriAnimal farmerIn, double speedIn) {
-		super(farmerIn, speedIn, 16);
+		super(farmerIn, speedIn, findPathMaxLength);
 		this.agriAnimal = farmerIn;
 	}
 
@@ -37,6 +41,9 @@ public class EntityAIPutItemInChest extends EntityAIMoveToBlock {
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
 	public boolean shouldExecute() {
+		if (!this.agriAnimal.isHarvesting()) {
+			return false;
+		}
 		if (this.runDelay <= 0) {
 			if (!net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.agriAnimal.world,
 					this.agriAnimal)) {
@@ -85,6 +92,11 @@ public class EntityAIPutItemInChest extends EntityAIMoveToBlock {
 	protected boolean shouldMoveTo(IWorldReaderBase worldIn, BlockPos pos) {
 		if (!isEntityInventoryFull) {
 			//Don't move while putting items or has inventry space
+			return false;
+		}
+		PathFinder path_finder = new PathFinder(new WalkNodeProcessor());
+		if (path_finder.findPath(this.agriAnimal.world, this.agriAnimal, pos, findPathMaxLength) == null) {
+			//no path to the destination block
 			return false;
 		}
 		IInventory iinventory = getInventoryAtPosition((World) worldIn, pos);
