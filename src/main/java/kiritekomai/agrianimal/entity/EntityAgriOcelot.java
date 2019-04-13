@@ -62,10 +62,10 @@ public class EntityAgriOcelot extends EntityAgriAnimal {
 		this.aiSit = new EntityAISit(this);
 		this.aiTempt = new EntityAITempt(this, 0.6D, field_195402_bB, true);
 		this.tasks.addTask(1, new EntityAISwimming(this));
-		this.tasks.addTask(2, this.aiSit);
-		this.tasks.addTask(3, this.aiTempt);
-		this.tasks.addTask(4, new EntityAIPutItemInChest(this, 1.0D));
-		this.tasks.addTask(5, new EntityAIMyHarvestFarmland(this, 1.0D));
+		this.tasks.addTask(2, new EntityAIPutItemInChest(this, 1.0D));
+		this.tasks.addTask(3, new EntityAIMyHarvestFarmland(this, 1.0D));
+		this.tasks.addTask(4, this.aiSit);
+		this.tasks.addTask(5, this.aiTempt);
 		this.tasks.addTask(7, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 5.0F));
 		this.tasks.addTask(8, new EntityAIAgriOcelotSit(this, 0.8D));
 		this.tasks.addTask(9, new EntityAILeapAtTarget(this, 0.3F));

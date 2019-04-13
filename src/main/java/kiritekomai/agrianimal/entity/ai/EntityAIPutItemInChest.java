@@ -1,5 +1,8 @@
 package kiritekomai.agrianimal.entity.ai;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -9,138 +12,240 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.ai.EntityAIMoveToBlock;
+import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.pathfinding.PathFinder;
-import net.minecraft.pathfinding.WalkNodeProcessor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorldReaderBase;
 import net.minecraft.world.World;
 
-public class EntityAIPutItemInChest extends EntityAIMoveToBlock {
+public class EntityAIPutItemInChest extends EntityAIBase {
+	protected int runDelay;
+	protected int timeoutCounter;
+	private int maxStayTicks;
 	/** Villager that is harvesting */
 	private final EntityAgriAnimal agriAnimal;
-	private boolean isEntityInventoryFull;
+	private BlockPos destinationBlock;
+	private BlockPos targetInventoryBlockPos;
+	public double movementSpeed;
 	/** 0 => harvest, 1 => replant, -1 => none */
 	private int currentTask;
 
-	static final int findPathMaxLength = 16;
+	static final int maxSearchDist = 16;
 
 	public EntityAIPutItemInChest(EntityAgriAnimal farmerIn, double speedIn) {
-		super(farmerIn, speedIn, findPathMaxLength);
 		this.agriAnimal = farmerIn;
+		movementSpeed = speedIn;
+		this.setMutexBits(5);
 	}
 
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
 	public boolean shouldExecute() {
-		if (!this.agriAnimal.isHarvesting()) {
+		if (this.runDelay > 0) {
+			--this.runDelay;
 			return false;
 		}
-		if (this.runDelay <= 0) {
-			if (!net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.agriAnimal.world,
-					this.agriAnimal)) {
-				return false;
-			}
+		this.runDelay = 120 + this.agriAnimal.getRNG().nextInt(180);
 
-			this.currentTask = -1;
-			this.isEntityInventoryFull = isInventoryFull((IInventory) this.agriAnimal.getInventory());
+		if (!this.agriAnimal.isHarvesting()
+				|| !isInventoryFull((IInventory) this.agriAnimal.getInventory())) {
+			return false;
 		}
 
-		return super.shouldExecute();
+		if (!net.minecraftforge.event.ForgeEventFactory.getMobGriefingEvent(this.agriAnimal.world,
+				this.agriAnimal)) {
+			return false;
+		}
+		ArrayList<BlockPos> list = this.getNearNotFullInventoryBlockPos();
+
+		if (canGoNearInventoryBlockPos(list)) {
+			this.currentTask = -1;
+			return true;
+
+		}
+		return false;
 	}
 
-	/**
-	 * Returns whether an in-progress EntityAIBase should continue executing
-	 */
+	private ArrayList<BlockPos> getNearNotFullInventoryBlockPos() {
+		ArrayList<BlockPos> list = new ArrayList<BlockPos>();
+		BlockPos blockpos = new BlockPos(this.agriAnimal.posX, this.agriAnimal.posY + 0.2D, this.agriAnimal.posZ);//農地はY軸で微妙に下がっていて切り捨てだと1ブロック下判定なのでハーフブロックで誤検知しない程度に適当にかさまし
+		BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+
+		//Search all iinventory within search distance
+		for (int x = -maxSearchDist; x <= maxSearchDist; x++) {
+			for (int y = -1; y <= 1; y++) {
+				for (int z = -maxSearchDist; z <= maxSearchDist; z++) {
+					blockpos$mutableblockpos.setPos(blockpos).move(x, y, z);
+
+					IInventory iinventory = getInventoryAtPosition(this.agriAnimal.world, blockpos$mutableblockpos);
+					if (iinventory != null && !this.isInventoryFull(iinventory)) {
+						list.add(new BlockPos(blockpos$mutableblockpos));
+					}
+				}
+			}
+		}
+		//sort list order by entity's position
+		Collections.sort(list, new Comparator<BlockPos>() {
+			@Override
+			public int compare(BlockPos obj1, BlockPos obj2) {
+				double d1 = obj1.getDistance(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+				double d2 = obj2.getDistance(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+				if (d1 < d2) {
+					return -1;
+				} else if (d1 > d2) {
+					return 1;
+				}
+				return 0;
+			}
+		});
+		return list;
+	}
+
+	private boolean canGoNearInventoryBlockPos(ArrayList<BlockPos> iinventoryBlockPosList) {
+
+		//PathFinder path_finder = new PathFinder(new WalkNodeProcessor());
+
+		for (BlockPos chkPos : iinventoryBlockPosList) {
+			ArrayList<BlockPos> list = new ArrayList<BlockPos>();
+			BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+
+			for (int yoffset = 0; yoffset <= 1; yoffset = yoffset > 0 ? -yoffset : 1 - yoffset) {
+				for (int xoffset = 0; xoffset <= 1; xoffset = xoffset > 0 ? -xoffset : 1 - xoffset) {
+					for (int zoffset = 0; zoffset <= 1; zoffset = zoffset > 0 ? -zoffset : 1 - zoffset) {
+						blockpos$mutableblockpos.setPos(chkPos).move(xoffset, yoffset, zoffset);
+						IBlockState iblockstate = agriAnimal.world.getBlockState(blockpos$mutableblockpos);
+						Block block = iblockstate.getBlock();
+						// don't moves to the block which has a VoxelShape
+						if (block.getShape(iblockstate, agriAnimal.world, blockpos$mutableblockpos).isEmpty()) {
+							blockpos$mutableblockpos.setPos(chkPos).move(xoffset, yoffset - 1, zoffset);
+							iblockstate = agriAnimal.world.getBlockState(blockpos$mutableblockpos);
+							block = iblockstate.getBlock();
+							if (!block.getShape(iblockstate, agriAnimal.world, blockpos$mutableblockpos).isEmpty()) {
+								if (this.agriAnimal.getNavigator().getPathToXYZ(
+										(double) ((float) blockpos$mutableblockpos.getX()) + 0.5D,
+										(double) ((float) blockpos$mutableblockpos.getY()) + 1.0D,
+										(double) ((float) blockpos$mutableblockpos.getZ()) + 0.5D) != null) {
+									/*if (path_finder.findPath(this.agriAnimal.world, this.agriAnimal, blockpos$mutableblockpos,
+																	maxSearchDist) != null) {*/
+									//exists path to the destination block
+									list.add(new BlockPos(blockpos$mutableblockpos));
+								}
+							}
+						}
+					}
+				}
+			}
+			if (!list.isEmpty()) {
+				//select a nearest position
+				BlockPos blockpos = new BlockPos(this.agriAnimal.posX, this.agriAnimal.posY, this.agriAnimal.posZ);
+				Collections.sort(list, new Comparator<BlockPos>() {
+					@Override
+					public int compare(BlockPos obj1, BlockPos obj2) {
+						double d1 = obj1.getDistance(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+						double d2 = obj2.getDistance(blockpos.getX(), blockpos.getY(), blockpos.getZ());
+						if (d1 < d2) {
+							return -1;
+						} else if (d1 > d2) {
+							return 1;
+						}
+						return 0;
+					}
+				});
+				this.destinationBlock = list.get(0);
+				this.targetInventoryBlockPos = chkPos;
+				return true;
+			}
+
+		}
+		return false;
+	}
+
+	public void startExecuting() {
+		this.agriAnimal.getNavigator().tryMoveToXYZ((double) ((float) this.destinationBlock.getX()) + 0.5D,
+				(double) (this.destinationBlock.getY() + 1), (double) ((float) this.destinationBlock.getZ()) + 0.5D,
+				this.movementSpeed);
+		this.timeoutCounter = 0;
+		this.maxStayTicks = this.agriAnimal.getRNG().nextInt(this.agriAnimal.getRNG().nextInt(1200) + 1200) + 1200;
+
+		this.currentTask = 1;
+	}
+
 	public boolean shouldContinueExecuting() {
-		return this.currentTask >= 0 && super.shouldContinueExecuting();
+		return this.currentTask >= 0 && this.timeoutCounter >= -this.maxStayTicks && this.timeoutCounter <= 1200;
 	}
 
 	/**
 	 * Keep ticking a continuous task that has already been started
 	 */
 	public void tick() {
-		super.tick();
 		this.agriAnimal.getLookHelper().setLookPosition((double) this.destinationBlock.getX() + 0.5D,
 				(double) (this.destinationBlock.getY() + 0.5D), (double) this.destinationBlock.getZ() + 0.5D, 10.0F,
 				(float) this.agriAnimal.getVerticalFaceSpeed());
-		if (this.getIsAboveDestination()) {
-			World world = this.agriAnimal.world;
-			IInventory iinventory = getInventoryAtPosition(world, this.destinationBlock);
 
-			//iinventory.openInventory(null);
-			this.transferItems((IInventory) this.agriAnimal.getInventory(), iinventory);
-			//iinventory.closeInventory(null);
+		/*if (this.agriAnimal.getNavigator().noPath()) {
+			//lost path
+			this.currentTask = -1;
+			this.runDelay = 10;
+			return;
+		} else */
+		double dx = this.agriAnimal.posX - ((double) destinationBlock.getX() + 0.5D);
+		double dy = this.agriAnimal.posY + 0.5D - ((double) destinationBlock.getY() + 0.5D);
+		double dz = this.agriAnimal.posZ - ((double) destinationBlock.getZ() + 0.5D);
+		double dist_2 = dx * dx + dy * dy + dz * dz;
+		if (dist_2 > 1.5D) {
+			//on going
+			++this.timeoutCounter;
+			this.agriAnimal.getNavigator().tryMoveToXYZ((double) ((float) this.destinationBlock.getX()) + 0.5D,
+					(double) (this.destinationBlock.getY()) + 1.0D,
+					(double) ((float) this.destinationBlock.getZ()) + 0.5D, this.movementSpeed);
+			if (this.agriAnimal.getNavigator().noPath()) {
+				//lost path
+				this.currentTask = -1;
+				this.runDelay = 10;
+			}
+		} else {
+			//arrive
+			--this.timeoutCounter;
 
+			//put items
+			IInventory targetInventory = getInventoryAtPosition(this.agriAnimal.world, targetInventoryBlockPos);
+			if (targetInventory != null) {
+				this.transferItems((IInventory) this.agriAnimal.getInventory(), targetInventory);
+			}
+			this.agriAnimal.getNavigator().clearPath();
 			this.currentTask = -1;
 			this.runDelay = 10;
 		}
-
-	}
-
-	/**
-	 * Return true to set given position as destination
-	 */
-	protected boolean shouldMoveTo(IWorldReaderBase worldIn, BlockPos pos) {
-		if (!isEntityInventoryFull) {
-			//Don't move while putting items or has inventry space
-			return false;
-		}
-		PathFinder path_finder = new PathFinder(new WalkNodeProcessor());
-		if (path_finder.findPath(this.agriAnimal.world, this.agriAnimal, pos, findPathMaxLength) == null) {
-			//no path to the destination block
-			return false;
-		}
-		IInventory iinventory = getInventoryAtPosition((World) worldIn, pos);
-		if (iinventory == null) {
-			//Don't move if block isn't chest
-			return false;
-		}
-
-		if (!isInventoryFull(iinventory) && isInventoryFull((IInventory) this.agriAnimal.getInventory())) {
-			this.currentTask = 1;
-			return true;
-		}
-		return false;
 	}
 
 	@Nullable
 	public static IInventory getInventoryAtPosition(World worldIn, BlockPos pos) {
 		IInventory iinventory = null;
-		BlockPos[] chkPosArray = { pos, pos.up().north(), pos.up().east(), pos.up().south(), pos.up().west() };
 
-		for (BlockPos chkPos : chkPosArray) {
-
-			IBlockState iblockstate = worldIn.getBlockState(chkPos);
-			Block block = iblockstate.getBlock();
-			if (iblockstate.hasTileEntity()) {
-				TileEntity tileentity = worldIn.getTileEntity(chkPos);
-				if (tileentity instanceof IInventory) {
-					iinventory = (IInventory) tileentity;
-					if (iinventory instanceof TileEntityChest && block instanceof BlockChest) {
-						iinventory = ((BlockChest) block).getContainer(iblockstate, worldIn, chkPos, true);
-					}
+		IBlockState iblockstate = worldIn.getBlockState(pos);
+		Block block = iblockstate.getBlock();
+		if (iblockstate.hasTileEntity()) {
+			TileEntity tileentity = worldIn.getTileEntity(pos);
+			if (tileentity instanceof IInventory) {
+				iinventory = (IInventory) tileentity;
+				if (iinventory instanceof TileEntityChest && block instanceof BlockChest) {
+					iinventory = ((BlockChest) block).getContainer(iblockstate, worldIn, pos, true);
 				}
 			}
+		}
 
-			if (iinventory == null) {
-				List<Entity> list = ((World) worldIn).getEntitiesInAABBexcluding((Entity) null,
-						new AxisAlignedBB(chkPos),
-						EntitySelectors.HAS_INVENTORY);
-				if (!list.isEmpty()) {
-					iinventory = (IInventory) list.get(worldIn.rand.nextInt(list.size()));
-				}
-			}
-			if (iinventory != null) {
-				break;
+		if (iinventory == null) {
+			List<Entity> list = ((World) worldIn).getEntitiesInAABBexcluding((Entity) null,
+					new AxisAlignedBB(pos),
+					EntitySelectors.HAS_INVENTORY);
+			if (!list.isEmpty()) {
+				iinventory = (IInventory) list.get(worldIn.rand.nextInt(list.size()));
 			}
 		}
 
