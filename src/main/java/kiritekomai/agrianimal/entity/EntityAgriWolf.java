@@ -76,7 +76,6 @@ public class EntityAgriWolf extends EntityAgriAnimal {
 		super(AgriAnimalEntity.AGRI_WOLF, worldIn);
 		this.setSize(0.6F, 0.85F);
 		this.setTamed(false);
-		this.setCanPickUpLoot(true);
 	}
 
 	protected void initEntityAI() {
@@ -380,16 +379,6 @@ public class EntityAgriWolf extends EntityAgriAnimal {
 
 			if (this.isOwner(player) && !this.world.isRemote && !this.isBreedingItem(itemstack)) {
 				if (hand == EnumHand.MAIN_HAND) {
-					/*if(item == Items.WHEAT) {
-					this.aiDayDream.setDayDreaming(!this.aiDayDream.isDayDreaming());
-					this.setHarvesting(this.isHarvestMode())//this.aiDayDream.isDayDreaming());
-					this.aiSit.setSitting(false);
-					}
-					else {
-					this.aiDayDream.setDayDreaming(false);
-					this.setHarvesting(false);
-					}*/
-					boolean nextState;
 					if (this.isHarvesting()) {
 						if (item == Items.WHEAT) {
 							this.aiSit.setSitting(false);

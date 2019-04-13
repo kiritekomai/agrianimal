@@ -27,6 +27,7 @@ public abstract class EntityAgriAnimal extends EntityTameable {
 
 	public EntityAgriAnimal(EntityType<?> type, World worldIn) {
 		super(type, worldIn);
+		this.setCanPickUpLoot(true);
 	}
 
 	protected void registerData() {
