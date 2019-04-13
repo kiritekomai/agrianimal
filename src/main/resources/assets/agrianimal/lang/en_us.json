@@ -1,5 +1,7 @@
 {
 	"item.agrianimal.spawn_egg_agri_wolf": "Agri Wolf Spawn Egg",
+	"item.agrianimal.spawn_egg_agri_ocelot": "Agri Ocelot Spawn Egg",
 	"entity.agrianimal.agri_wolf": "Agri Wolf",
+	"entity.agrianimal.agri_ocelot": "Agri Ocelot",
 	"agrianimal.update.newversion": "A new %s version is available"
 }

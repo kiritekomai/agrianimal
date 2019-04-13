@@ -14,12 +14,16 @@ import net.minecraftforge.registries.ObjectHolder;
 public class AgriAnimalItem {
 
 	public static final Item spawn_egg_agri_wolf = null;
+	public static final Item spawn_egg_agri_ocelot = null;
 
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event) {
 		event.getRegistry().registerAll(
 				new ItemSpawnEgg(AgriAnimalEntity.AGRI_WOLF, 0xFFFFFF, 0x000000,
 						new Item.Properties().maxStackSize(64).group(ItemGroup.MISC)).setRegistryName(Reference.MODID,
-								"spawn_egg_agri_wolf"));
+								"spawn_egg_agri_wolf"),
+				new ItemSpawnEgg(AgriAnimalEntity.AGRI_OCELOT, 0xFFFFFF, 0x000000,
+						new Item.Properties().maxStackSize(64).group(ItemGroup.MISC)).setRegistryName(Reference.MODID,
+								"spawn_egg_agri_ocelot"));
 	}
 }

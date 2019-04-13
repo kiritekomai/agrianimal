@@ -7,13 +7,13 @@
 	],
 	"key": {
 		"#": {
-			"item": "minecraft:cod"
+			"item": "minecraft:beef"
 		},
 		"B": {
-			"item": "minecraft:salmon"
+			"item": "minecraft:bone"
 		},
 		"M": {
-			"item": "minecraft:tropical_fish"
+			"item": "minecraft:mutton"
 		},
 		"E": {
 			"item": "minecraft:emerald_block"
@@ -35,7 +35,7 @@
 		}
 	},
 	"result": {
-		"item": "agrianimal:spawn_egg_agri_ocelot",
+		"item": "agrianimal:spawn_egg_agri_wolf",
 		"count": 1
 	}
 }

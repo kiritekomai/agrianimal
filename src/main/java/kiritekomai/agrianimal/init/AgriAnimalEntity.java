@@ -24,14 +24,14 @@ public class AgriAnimalEntity {
 	public static final EntityType<EntityAgriWolf> AGRI_WOLF = EntityType.Builder
 			.create(EntityAgriWolf.class, EntityAgriWolf::new).build(Reference.MODID+":agri_wolf");
 	public static final EntityType<EntityAgriOcelot> AGRI_OCELOT = EntityType.Builder
-			.create(EntityAgriOcelot.class, EntityAgriOcelot::new).build(Reference.MODID+":agri_ocelt");
+			.create(EntityAgriOcelot.class, EntityAgriOcelot::new).build(Reference.MODID+":agri_ocelot");
 
 	@SubscribeEvent
 	public static void registerEntity(Register<EntityType<?>> event) {
 		IRegistry.field_212629_r.put(new ResourceLocation(Reference.MODID+":agri_wolf"), AGRI_WOLF);
 		event.getRegistry().register(AGRI_WOLF);
 
-		IRegistry.field_212629_r.put(new ResourceLocation(Reference.MODID+":agri_ocelt"), AGRI_OCELOT);
+		IRegistry.field_212629_r.put(new ResourceLocation(Reference.MODID+":agri_ocelot"), AGRI_OCELOT);
 		event.getRegistry().register(AGRI_OCELOT);
 	}
 
