@@ -1,5 +1,8 @@
 package kiritekomai.agrianimal.entity;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockStemGrown;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityTameable;
@@ -14,12 +17,14 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
 public abstract class EntityAgriAnimal extends EntityTameable {
-
+	private static final boolean debugEnable = false;
 	private static final DataParameter<Boolean> HAEVESTING = EntityDataManager.createKey(EntityAgriAnimal.class,
 			DataSerializers.BOOLEAN);
 
@@ -145,5 +150,34 @@ public abstract class EntityAgriAnimal extends EntityTameable {
 
 	public boolean isHarvesting() {
 		return this.dataManager.get(HAEVESTING);
+	}
+
+	public boolean attackEntityFrom(DamageSource source, float amount) {
+		if (!debugEnable && (source == DamageSource.IN_WALL) && this.isHarvesting()) {
+			BlockPos pos = new BlockPos(this);
+			BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+			for (int xoffset = 0; xoffset <= 1; xoffset = xoffset > 0 ? -xoffset : 1 - xoffset) {
+				for (int zoffset = 0; zoffset <= 1; zoffset = zoffset > 0 ? -zoffset : 1 - zoffset) {
+					blockpos$mutableblockpos.setPos(pos).move(xoffset, 0, zoffset);
+					Block block = this.world.getBlockState(blockpos$mutableblockpos).getBlock();
+					if( block instanceof BlockStemGrown) {
+						this.world.destroyBlock(blockpos$mutableblockpos, true);
+					}
+				}
+			}
+			return false;
+		}
+		return super.attackEntityFrom(source, amount);
+	}
+
+	public void onDeath(DamageSource cause) {
+		if (debugEnable) {
+			Minecraft.getInstance().player.sendMessage(new TextComponentString(
+					"AgriAnimal is dead : " + this.posX + ", " + this.posY + ", " + this.posZ));
+			//this.sendMessage(new TextComponentString(
+				//	"AgriAnimal is dead : " + this.posX + ", " + this.posY + ", " + this.posZ));
+		}
+		this.dropInventoryItems();
+		super.onDeath(cause);
 	}
 }
