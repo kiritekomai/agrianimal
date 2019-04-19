@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import kiritekomai.agrianimal.entity.ai.EntityAIMyFollowOwner;
 import kiritekomai.agrianimal.entity.ai.EntityAIMyHarvestFarmland;
+import kiritekomai.agrianimal.entity.ai.EntityAIPickUpItem;
 import kiritekomai.agrianimal.entity.ai.EntityAIPutItemInChest;
 import kiritekomai.agrianimal.init.AgriAnimalEntity;
 import net.minecraft.block.state.IBlockState;
@@ -83,12 +84,13 @@ public class EntityAgriWolf extends EntityAgriAnimal {
 		this.tasks.addTask(1, new EntityAISwimming(this));
 		this.tasks.addTask(2, new EntityAIPutItemInChest(this, 1.0D));
 		this.tasks.addTask(3, new EntityAIMyHarvestFarmland(this, 1.0D));
-		this.tasks.addTask(4, this.aiSit);
-		this.tasks.addTask(6, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 2.0F));
-		this.tasks.addTask(7, new EntityAIMate(this, 1.0D));
-		this.tasks.addTask(8, new EntityAIWanderAvoidWater(this, 1.0D));
-		this.tasks.addTask(10, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-		this.tasks.addTask(10, new EntityAILookIdle(this));
+		this.tasks.addTask(4, new EntityAIPickUpItem(this, 1.0D));
+		this.tasks.addTask(20, this.aiSit);
+		this.tasks.addTask(21, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 2.0F));
+		this.tasks.addTask(22, new EntityAIMate(this, 1.0D));
+		this.tasks.addTask(23, new EntityAIWanderAvoidWater(this, 1.0D));
+		this.tasks.addTask(24, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
+		this.tasks.addTask(25, new EntityAILookIdle(this));
 		this.targetTasks.addTask(1, new EntityAIOwnerHurtByTarget(this));
 		this.targetTasks.addTask(2, new EntityAIOwnerHurtTarget(this));
 		this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true));

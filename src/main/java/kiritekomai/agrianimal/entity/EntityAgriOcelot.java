@@ -6,6 +6,7 @@ import kiritekomai.agrianimal.Reference;
 import kiritekomai.agrianimal.entity.ai.EntityAIAgriOcelotSit;
 import kiritekomai.agrianimal.entity.ai.EntityAIMyFollowOwner;
 import kiritekomai.agrianimal.entity.ai.EntityAIMyHarvestFarmland;
+import kiritekomai.agrianimal.entity.ai.EntityAIPickUpItem;
 import kiritekomai.agrianimal.entity.ai.EntityAIPutItemInChest;
 import kiritekomai.agrianimal.init.AgriAnimalEntity;
 import net.minecraft.block.Block;
@@ -62,17 +63,18 @@ public class EntityAgriOcelot extends EntityAgriAnimal {
 		this.aiSit = new EntityAISit(this);
 		this.aiTempt = new EntityAITempt(this, 0.6D, field_195402_bB, true);
 		this.tasks.addTask(1, new EntityAISwimming(this));
-		this.tasks.addTask(2, new EntityAIPutItemInChest(this, 1.0D));
-		this.tasks.addTask(3, new EntityAIMyHarvestFarmland(this, 1.0D));
-		this.tasks.addTask(4, this.aiSit);
-		this.tasks.addTask(5, this.aiTempt);
-		this.tasks.addTask(7, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 5.0F));
-		this.tasks.addTask(8, new EntityAIAgriOcelotSit(this, 0.8D));
-		this.tasks.addTask(9, new EntityAILeapAtTarget(this, 0.3F));
-		this.tasks.addTask(10, new EntityAIOcelotAttack(this));
-		this.tasks.addTask(11, new EntityAIMate(this, 0.8D));
-		this.tasks.addTask(12, new EntityAIWanderAvoidWater(this, 0.8D, 1.0000001E-5F));
-		this.tasks.addTask(13, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
+		this.tasks.addTask(2, this.aiTempt);
+		this.tasks.addTask(3, new EntityAIPutItemInChest(this, 1.0D));
+		this.tasks.addTask(4, new EntityAIPickUpItem(this, 1.0D));
+		this.tasks.addTask(5, new EntityAIMyHarvestFarmland(this, 1.0D));
+		this.tasks.addTask(6, this.aiSit);
+		this.tasks.addTask(6, new EntityAIMyFollowOwner(this, 1.0D, 10.0F, 5.0F));
+		this.tasks.addTask(20, new EntityAIAgriOcelotSit(this, 0.8D));
+		this.tasks.addTask(21, new EntityAILeapAtTarget(this, 0.3F));
+		this.tasks.addTask(22, new EntityAIOcelotAttack(this));
+		this.tasks.addTask(23, new EntityAIMate(this, 0.8D));
+		this.tasks.addTask(24, new EntityAIWanderAvoidWater(this, 0.8D, 1.0000001E-5F));
+		this.tasks.addTask(25, new EntityAIWatchClosest(this, EntityPlayer.class, 10.0F));
 	}
 
 	protected void registerData() {
